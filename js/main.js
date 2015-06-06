@@ -1596,8 +1596,8 @@ THREE.EventDispatcher.prototype.apply( THREE.OBJMTLLoader.prototype );
 
     var container = document.querySelector('.hero');
 
-    var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-    camera.position.z = 100;
+    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+    camera.position.z = 800;
 
     // scene
 
@@ -1607,53 +1607,46 @@ THREE.EventDispatcher.prototype.apply( THREE.OBJMTLLoader.prototype );
     scene.add(ambient);
 
     var directionalLight = new THREE.DirectionalLight(0xffeedd);
-    directionalLight.position.set( 0, 0, 1 ).normalize();
+    directionalLight.position.set(0, 0, 1).normalize();
     scene.add(directionalLight);
 
     // model
-
-    var onProgress = function ( xhr ) {
-        if ( xhr.lengthComputable ) {
-            var percentComplete = xhr.loaded / xhr.total * 100;
-            console.log( Math.round(percentComplete, 2) + '% downloaded' );
-        }
-    };
-
-    var onError = function ( xhr ) {
-    };
-
-
     var loader = new THREE.OBJMTLLoader();
-    // loader.load( 'BSS_One/frigate_full.obj', 'BSS_One/frigate_full.mtl', function ( object ) {
-
-    //     object.position.y = - 80;
-    //     scene.add( object );
-
-    // }, onProgress, onError );
+    loader.load('model/ship.obj', 'model/ship.mtl', function(object) {
+        object.position.y = -100;
+        scene.add(object);
+    }, function(xhr) {
+        if (xhr.lengthComputable) {
+            var percentComplete = xhr.loaded / xhr.total * 100;
+            console.log(Math.round(percentComplete, 2) + '% downloaded');
+        }
+    }, function() {});
 
     var renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(container.innerWidth, container.innerHeight);
+    renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
-    window.addEventListener('resize', onWindowResize, false);
 
+    // var helper = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), 50);
+    // helper.position.set(0, 0, 0);
+    // scene.add(helper);
 
-    // animate();
+    animate();
 
-    function onWindowResize() {
-        windowHalfX = container.innerWidth / 2;
-        windowHalfY = container.innerHeight / 2;
+    window.addEventListener('resize', function onWindowResize() {
+        windowHalfX = container.clientWidth / 2;
+        windowHalfY = container.clientHeight / 2;
 
-        camera.aspect = container.innerWidth / container.innerHeight;
+        camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
 
-        renderer.setSize(container.innerWidth, container.innerHeight);
-    }
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
 
-    function onDocumentMouseMove( event ) {
+    document.body.addEventListener('mousemove', function onDocumentMouseMove(event) {
         mouseX = (event.clientX - windowHalfX) / 2;
         mouseY = (event.clientY - windowHalfY) / 2;
-    }
+    });
 
     function animate() {
         requestAnimationFrame(animate);
