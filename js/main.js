@@ -1142,6 +1142,16 @@ THREE.MTLLoader.MaterialCreator.prototype = {
 
                     break;
 
+                case 'map_kd':
+
+                    // Diffuse texture map
+
+                    params[ 'map' ] = this.loadTexture( this.baseUrl + value );
+                    params[ 'map' ].wrapS = this.wrap;
+                    params[ 'map' ].wrapT = this.wrap;
+
+                    break;
+
                 case 'ns':
 
                     // The specular exponent (defines the focus of the specular highlight)
@@ -1166,6 +1176,19 @@ THREE.MTLLoader.MaterialCreator.prototype = {
 
                     break;
 
+                case 'map_bump':
+                case 'bump':
+
+                    // Bump texture map
+
+                    if ( params[ 'bumpMap' ] ) break; // Avoid loading twice.
+
+                    params[ 'bumpMap' ] = this.loadTexture( this.baseUrl + value );
+                    params[ 'bumpMap' ].wrapS = this.wrap;
+                    params[ 'bumpMap' ].wrapT = this.wrap;
+
+                    break;
+
                 default:
                     break;
 
@@ -1181,6 +1204,39 @@ THREE.MTLLoader.MaterialCreator.prototype = {
 
         this.materials[ materialName ] = new THREE.MeshPhongMaterial( params );
         return this.materials[ materialName ];
+
+    },
+
+
+    loadTexture: function ( url, mapping, onLoad, onError ) {
+
+        var texture;
+        var loader = THREE.Loader.Handlers.get( url );
+
+        if ( loader !== null ) {
+
+            texture = loader.load( url, onLoad );
+
+        } else {
+
+            texture = new THREE.Texture();
+
+            loader = new THREE.ImageLoader();
+            loader.crossOrigin = this.crossOrigin;
+            loader.load( url, function ( image ) {
+
+                texture.image = THREE.MTLLoader.ensurePowerOfTwo_( image );
+                texture.needsUpdate = true;
+
+                if ( onLoad ) onLoad( texture );
+
+            } );
+
+        }
+
+        if ( mapping !== undefined ) texture.mapping = mapping;
+
+        return texture;
 
     }
 
@@ -1219,6 +1275,7 @@ THREE.MTLLoader.nextHighestPowerOfTwo_ = function( x ) {
 };
 
 THREE.EventDispatcher.prototype.apply( THREE.MTLLoader.prototype );
+
 
 /**
  * Loads a Wavefront .obj file with materials
